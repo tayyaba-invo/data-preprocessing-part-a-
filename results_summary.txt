@@ -1,0 +1,114 @@
+Dataset used for Q1-Q4: Offline synthetic housing-price fallback
+Rows: 3000, Features: 8
+
+========================================================================================
+Q1 - Missingness percentages and missingness correlation heatmap
+========================================================================================
+            missing_percent
+MedInc                18.57
+AveBedrms             16.50
+AveRooms              15.63
+HouseAge              12.07
+Population             9.83
+AveOccup               0.00
+Latitude               0.00
+Longitude              0.00
+
+Interpretation:
+- Larger percentages identify columns with more missing values.
+- Positive correlation means two columns tend to be missing together.
+- Near-zero correlation means little relationship between their missingness indicators.
+
+========================================================================================
+Q2 - Mean imputation vs MICE on housing-price data
+========================================================================================
+                  strategy  mean_RMSE  std_RMSE
+0          Mean Imputation     0.4924    0.0152
+1  MICE / IterativeImputer     0.4888    0.0174
+
+Lower RMSE is better. Best strategy in this run: MICE / IterativeImputer
+The regression model and the five CV folds are identical for both strategies.
+
+========================================================================================
+Q3 - Correct fold-wise imputation vs leaked full-dataset imputation
+========================================================================================
+                     evaluation  mean_RMSE  std_RMSE
+0  Proper Pipeline (no leakage)     0.4888    0.0174
+1          Leaked preprocessing     0.4889    0.0174
+
+Optimistic bias = proper RMSE - leaked RMSE = -0.0001
+Optimistic bias percentage = -0.02%
+The leaked run was not numerically better in this sample. It is still invalid because validation-fold information entered preprocessing.
+
+========================================================================================
+Q4 - Median imputation with vs without missing-value indicator
+========================================================================================
+Top coefficients WITHOUT indicator:
+MedInc        3.2704
+AveRooms      0.2457
+Latitude     -0.1111
+AveOccup     -0.1086
+AveBedrms    -0.0948
+Longitude     0.0762
+HouseAge      0.0512
+Population   -0.0105
+dtype: float64
+
+Top coefficients WITH indicator:
+MedInc                       3.6215
+missingindicator_MedInc      1.1000
+AveOccup                    -0.1593
+AveRooms                     0.1580
+Latitude                    -0.1479
+AveBedrms                   -0.1262
+HouseAge                     0.1085
+Longitude                    0.0415
+Population                  -0.0379
+missingindicator_HouseAge   -0.0338
+dtype: float64
+
+MedInc missingness-indicator coefficient (missingindicator_MedInc): 1.1000
+Interpretation: after controlling for the other standardized features, MedInc being missing is associated with higher log-odds of the high-price class.
+
+Without the indicator, a missing value replaced by the median is indistinguishable from a genuinely median-like observation. The indicator preserves the information that the value was originally missing.
+
+========================================================================================
+Q5 - Simulate MCAR, MAR, MNAR and test them
+========================================================================================
+
+MCAR
+Missing rate: 30.28%
+Minimum p-value: 0.527632
+Bonferroni alpha: 0.0125
+Decision: Consistent with MCAR
+Expected: Consistent with MCAR
+Correct classification? YES
+
+MAR
+Missing rate: 29.84%
+Minimum p-value: 8.44079e-30
+Bonferroni alpha: 0.0125
+Decision: Non-MCAR detected
+Expected: Non-MCAR detected
+Correct classification? YES
+
+MNAR
+Missing rate: 31.20%
+Minimum p-value: 5.2429e-120
+Bonferroni alpha: 0.0125
+Decision: Non-MCAR detected
+Expected: Non-MCAR detected
+Correct classification? YES
+
+Summary:
+mechanism             decision             expected  correct
+     MCAR Consistent with MCAR Consistent with MCAR     True
+      MAR    Non-MCAR detected    Non-MCAR detected     True
+     MNAR    Non-MCAR detected    Non-MCAR detected     True
+
+Result: this controlled simulation should classify MCAR as consistent with MCAR and flag MAR/MNAR as non-MCAR. Exact p-values vary slightly with random sampling.
+
+========================================================================================
+DONE
+========================================================================================
+All generated tables/plots are in: /mnt/data/missing_data_assignment/outputs

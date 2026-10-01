@@ -1,0 +1,4 @@
+mechanism,missing_rate_percent,min_p_value,bonferroni_alpha,decision,expected,correct
+MCAR,30.28,0.5276323474945988,0.0125,Consistent with MCAR,Consistent with MCAR,True
+MAR,29.84,8.440786205823059e-30,0.0125,Non-MCAR detected,Non-MCAR detected,True
+MNAR,31.2,5.24289963610685e-120,0.0125,Non-MCAR detected,Non-MCAR detected,True
